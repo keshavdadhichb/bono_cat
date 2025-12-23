@@ -21,7 +21,8 @@ class TeenBoyGenerator(BaseGenerator):
     # Curated prompts for high-quality teen model generation
     POSITIVE_PROMPT = """
     photorealistic fashion photography of a teenage boy, age 14-15 years old,
-    Indian ethnicity, handsome face, confident natural expression,
+    fair skin north Indian ethnicity, handsome youthful face, bright eyes,
+    confident natural expression with subtle smile,
     athletic slim build, standing in a cool relaxed pose,
     professional studio lighting, soft diffused key light,
     clean neutral grey studio background,
