@@ -1,0 +1,210 @@
+{
+  "3": {
+    "class_type": "KSampler",
+    "inputs": {
+      "cfg": 7.0,
+      "denoise": 1.0,
+      "latent_image": ["5", 0],
+      "model": ["4", 0],
+      "negative": ["7", 0],
+      "positive": ["6", 0],
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "seed": -1,
+      "steps": 35
+    },
+    "_meta": {
+      "title": "KSampler - Model Generation"
+    }
+  },
+  "4": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "juggernautXL_v9.safetensors"
+    },
+    "_meta": {
+      "title": "Load Juggernaut XL Checkpoint"
+    }
+  },
+  "5": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "batch_size": 1,
+      "height": 1344,
+      "width": 896
+    },
+    "_meta": {
+      "title": "Empty Latent (Portrait Ratio)"
+    }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": ["4", 1],
+      "text": "photorealistic fashion photography of a teenage boy, age 14-15 years old, Indian ethnicity, handsome face, confident natural expression, athletic slim build, standing in a cool relaxed pose, professional studio lighting, soft diffused key light, clean neutral grey studio background, fashion catalog style, editorial quality, wearing a stylish casual t-shirt, sharp focus on face and clothing details, high fashion magazine aesthetic, 8k resolution, hyperrealistic, professional photography"
+    },
+    "_meta": {
+      "title": "CLIP Text Encode (Positive)"
+    }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": ["4", 1],
+      "text": "deformed, distorted, disfigured, poorly drawn, bad anatomy, wrong anatomy, extra limbs, missing limbs, floating limbs, disconnected limbs, mutation, mutated, ugly, disgusting, blurry, low quality, low resolution, pixelated, watermark, text, logo, signature, jpeg artifacts, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra fingers, mutated hands, deformed body, deformed face, deformed fingers, bad proportions, gross proportions, cartoon, anime, 3d render, illustration, painting"
+    },
+    "_meta": {
+      "title": "CLIP Text Encode (Negative)"
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["3", 0],
+      "vae": ["4", 2]
+    },
+    "_meta": {
+      "title": "VAE Decode - Base Model"
+    }
+  },
+  "10": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "garment.png",
+      "upload": "image"
+    },
+    "_meta": {
+      "title": "Load Garment Image"
+    }
+  },
+  "15": {
+    "class_type": "IDM-VTON",
+    "inputs": {
+      "model_image": ["8", 0],
+      "garment_image": ["10", 0],
+      "garment_mask": ["16", 0],
+      "denoise_steps": 30,
+      "seed": -1,
+      "garment_type": "upper_body",
+      "preserve_text": true
+    },
+    "_meta": {
+      "title": "IDM-VTON - Virtual Try-On"
+    }
+  },
+  "16": {
+    "class_type": "AutoMaskGenerator",
+    "inputs": {
+      "image": ["10", 0],
+      "threshold": 0.5,
+      "dilate": 5,
+      "blur": 3
+    },
+    "_meta": {
+      "title": "Generate Garment Mask"
+    }
+  },
+  "20": {
+    "class_type": "FaceDetailer",
+    "inputs": {
+      "image": ["15", 0],
+      "model": ["4", 0],
+      "clip": ["4", 1],
+      "vae": ["4", 2],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "bbox_detector": "face_yolov8m.pt",
+      "sam_model": "sam_vit_b_01ec64.pth",
+      "denoise": 0.4,
+      "steps": 20,
+      "cfg": 7.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "feather": 5,
+      "guide_size": 384,
+      "max_size": 1024
+    },
+    "_meta": {
+      "title": "FaceDetailer - Enhance Face"
+    }
+  },
+  "25": {
+    "class_type": "UltimateSDUpscale",
+    "inputs": {
+      "image": ["20", 0],
+      "model": ["4", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "vae": ["4", 2],
+      "upscale_by": 4.0,
+      "seed": -1,
+      "steps": 20,
+      "cfg": 7.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 0.2,
+      "tile_width": 512,
+      "tile_height": 512,
+      "tile_overlap": 64,
+      "upscaler": "4x-UltraSharp"
+    },
+    "_meta": {
+      "title": "Ultimate SD Upscale to 4K"
+    }
+  },
+  "30": {
+    "class_type": "ImageCropForCloseup",
+    "inputs": {
+      "image": ["25", 0],
+      "crop_region": "upper_body",
+      "padding": 0.15
+    },
+    "_meta": {
+      "title": "Crop Closeup Region"
+    }
+  },
+  "35": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["25", 0],
+      "filename_prefix": "full_body"
+    },
+    "_meta": {
+      "title": "Save Full Body Image"
+    }
+  },
+  "36": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["30", 0],
+      "filename_prefix": "closeup"
+    },
+    "_meta": {
+      "title": "Save Closeup Image"
+    }
+  },
+  "_pipeline_info": {
+    "name": "Bono Fashion Catalog Pipeline",
+    "version": "1.0.0",
+    "description": "Complete pipeline for generating AI fashion models with virtual try-on",
+    "stages": [
+      "Model Generation (Juggernaut XL)",
+      "Virtual Try-On (IDM-VTON)",
+      "Face Enhancement (FaceDetailer)",
+      "4K Upscaling (Ultimate SD Upscale)",
+      "Closeup Cropping"
+    ],
+    "required_models": [
+      "juggernautXL_v9.safetensors",
+      "idm_vton_model.safetensors",
+      "face_yolov8m.pt",
+      "sam_vit_b_01ec64.pth",
+      "4x-UltraSharp.pth"
+    ],
+    "notes": {
+      "garment_input": "Replace 'garment.png' with actual garment image path",
+      "prompts": "Prompts are injected from TeenBoyGenerator for dynamic control",
+      "seed": "Set to -1 for random, or specify for reproducibility"
+    }
+  }
+}
